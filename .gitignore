@@ -1,0 +1,26 @@
+# .NET ビルド成果物
+bin/
+obj/
+
+# Visual Studio キャッシュ・一時ファイル
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/*
+!.vscode/extensions.json
+
+# NuGet パッケージ
+*.nupkg
+packages/
+
+# ログ
+*.log
+logs/
+
+# OS 生成ファイル
+.DS_Store
+Thumbs.db
