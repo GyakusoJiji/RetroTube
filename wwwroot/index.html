@@ -3,231 +3,254 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RetroTube - 過去のYouTube動画検索 & CRTビュワー</title>
+    <title>RetroTube RT-2000 ビデオ検索・再生装置</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div class="app-container">
-      <header>
-        <div class="logo-container">
-          <h1>RetroTube</h1>
-          <div class="subtitle">Time-Cutoff Search & CRT TV Player</div>
+    <div class="chassis">
+      <!-- 銘板 -->
+      <header class="nameplate">
+        <div class="nameplate-id">
+          <h1 class="wordmark">RetroTube</h1>
+          <p class="nameplate-sub">ビデオ検索・再生装置</p>
         </div>
+        <dl class="nameplate-spec">
+          <div class="spec-row">
+            <dt>MODEL</dt>
+            <dd>RT-2000</dd>
+          </div>
+          <div class="spec-row">
+            <dt>TYPE</dt>
+            <dd>TIME-CUTOFF SEARCH / CRT VIEWER</dd>
+          </div>
+        </dl>
       </header>
 
-      <main class="dashboard-grid">
-        <!-- LEFT COLUMN: Search & Settings Console -->
-        <aside class="control-panel">
-          <!-- API Configuration Section -->
-          <div class="panel-section">
-            <div class="panel-title">
-              <span>⚙️ API設定</span>
-            </div>
-            
-            <div class="connection-status" id="api-status-box">
-              <div class="status-dot mock-mode" id="api-status-dot"></div>
-              <div class="status-text" id="api-status-text">
-                現在のモード: <span class="text-mock">タイムカプセル (MOCK)</span>
-              </div>
-            </div>
-            
-            <div class="form-group" style="margin-top: 15px;">
-              <label for="youtube-api-key">YouTube APIキー (v3)</label>
-              <input 
-                type="password" 
-                id="youtube-api-key" 
-                class="cyber-input" 
-                placeholder="AIzaSy..." 
-                autocomplete="off"
-              />
-              <button id="save-api-key-btn" class="cyber-btn btn-magenta" style="padding: 6px 12px; font-size: 0.8rem; margin-top: 5px;">
-                キーを保存
-              </button>
-            </div>
-          </div>
-
-          <!-- Video Search Section -->
-          <div class="panel-section">
-            <div class="panel-title">
-              <span>🔍 過去検索コンソール</span>
+      <main class="console">
+        <!-- 左：操作パネル -->
+        <aside class="panel">
+          <!-- 検索ユニット -->
+          <section class="unit">
+            <div class="unit-head">
+              <h2>検索</h2>
+              <span class="unit-code">TUNER</span>
             </div>
 
-            <div class="form-group">
-              <label for="search-query">検索キーワード</label>
-              <input 
-                type="text" 
-                id="search-query" 
-                class="cyber-input" 
-                placeholder="レトロゲーム, 80s synthwave, 初代..." 
+            <div class="field">
+              <label for="search-query">キーワード</label>
+              <input
+                type="text"
+                id="search-query"
+                class="input"
+                placeholder="レトロゲーム／初代／1995"
                 value=""
               />
             </div>
 
-            <div class="form-group">
-              <label for="cutoff-date">指定日時（これ以前の動画のみ検索）</label>
-              <input 
-                type="datetime-local" 
-                id="cutoff-date" 
-                class="cyber-input" 
-              />
-            </div>
-
-            <div class="form-group">
-              <label>クイック時間旅行 (プリセット)</label>
-              <div class="timeline-presets">
-                <button class="preset-btn" data-date="1990-01-01T00:00" title="インターネット前夜">1990年 前夜</button>
-                <button class="preset-btn" data-date="2000-01-01T00:00" title="Y2Kミレニアム">2000年 Y2K</button>
-                <button class="preset-btn active" data-date="2007-01-01T00:00" title="YouTube黎明期">2007年 黎明期</button>
-                <button class="preset-btn" data-date="2010-01-01T00:00" title="黄金期">2010年 黄金期</button>
-                <button class="preset-btn" data-date="2016-01-01T00:00" title="10年前">2016年 10年前</button>
-                <button class="preset-btn" id="btn-custom-now" title="現在時刻">現在時刻</button>
+            <!-- 年代ダイヤル：開始年と終了年をつまみ2本で挟む -->
+            <div class="field">
+              <span class="field-label">年代ダイヤル</span>
+              <div class="dial">
+                <div class="dial-face" id="dial-face">
+                  <div class="dial-ticks" aria-hidden="true"></div>
+                  <div class="dial-span" id="dial-span" aria-hidden="true"></div>
+                  <div class="dial-numerals" aria-hidden="true">
+                    <span style="left: 0%">1990</span>
+                    <span style="left: 27.78%">2000</span>
+                    <span style="left: 55.56%">2010</span>
+                    <span style="left: 83.33%">2020</span>
+                  </div>
+                  <input
+                    type="range"
+                    id="year-dial-start"
+                    class="dial-input dial-start"
+                    min="1990"
+                    max="2026"
+                    step="1"
+                    value="1990"
+                    aria-label="開始年"
+                    aria-describedby="dial-readout"
+                  />
+                  <input
+                    type="range"
+                    id="year-dial-end"
+                    class="dial-input dial-end"
+                    min="1990"
+                    max="2026"
+                    step="1"
+                    value="2010"
+                    aria-label="終了年"
+                    aria-describedby="dial-readout"
+                  />
+                </div>
+                <p class="dial-readout" id="dial-readout" aria-live="polite">
+                  <span class="dial-year" id="dial-year">1990年 → 2010年</span>
+                  <span class="dial-era" id="dial-era">インターネット前夜〜動画共有の黄金期</span>
+                </p>
               </div>
             </div>
 
-            <div class="form-group">
+            <div class="field">
+              <span class="field-label">期間（日時で指定）</span>
+              <div class="subfield">
+                <label for="cutoff-start">開始</label>
+                <input type="datetime-local" id="cutoff-start" class="input" />
+              </div>
+              <div class="subfield">
+                <label for="cutoff-end">終了</label>
+                <input type="datetime-local" id="cutoff-end" class="input" />
+              </div>
+              <button type="button" id="btn-now" class="key key-slim">終了を現在時刻にする</button>
+            </div>
+
+            <div class="field">
               <label for="search-sort">並び順</label>
-              <select id="search-sort" class="cyber-input cyber-select">
-                <option value="relevance">関連度順 (Relevance)</option>
-                <option value="date">アップロード日順 (Date)</option>
-                <option value="viewCount">再生回数順 (Views)</option>
-                <option value="rating">高評価順 (Rating)</option>
+              <select id="search-sort" class="input select">
+                <option value="relevance">関連度</option>
+                <option value="date">アップロード日</option>
+                <option value="viewCount">再生回数</option>
+                <option value="rating">高評価</option>
               </select>
             </div>
 
-            <button id="search-btn" class="cyber-btn" style="margin-top: 10px; width: 100%;">
-              タイムトラベル検索
-            </button>
-          </div>
+            <button type="button" id="search-btn" class="key key-main">検索する</button>
+          </section>
 
-          <!-- Video Effects Toggles -->
-          <div class="panel-section">
-            <div class="panel-title">
-              <span>📺 CRTモニター設定</span>
+          <!-- 画質ユニット -->
+          <section class="unit">
+            <div class="unit-head">
+              <h2>画面</h2>
+              <span class="unit-code">PICTURE</span>
             </div>
-            <div class="tv-options">
-              <span>走査線 & アナログ揺らぎ</span>
-              <label class="switch-label">
-                <input type="checkbox" id="scanline-toggle" class="switch-input" checked />
-                <span class="switch-slider"></span>
+            <div class="toggle-row">
+              <span class="toggle-name">走査線とにじみ</span>
+              <label class="toggle">
+                <input type="checkbox" id="scanline-toggle" checked />
+                <span class="toggle-track"><span class="toggle-knob"></span></span>
               </label>
             </div>
-          </div>
+          </section>
+
+          <!-- 接続ユニット -->
+          <section class="unit">
+            <div class="unit-head">
+              <h2>接続設定</h2>
+              <span class="unit-code">SETUP</span>
+            </div>
+
+            <div class="mode-strip">
+              <span class="lamp" id="api-status-dot"></span>
+              <span class="mode-text" id="api-status-text" aria-live="polite">
+                内蔵ライブラリで検索します
+              </span>
+            </div>
+
+            <div class="field">
+              <label for="youtube-api-key">YouTube APIキー（v3）</label>
+              <input
+                type="password"
+                id="youtube-api-key"
+                class="input"
+                placeholder="AIzaSy..."
+                autocomplete="off"
+              />
+              <button type="button" id="save-api-key-btn" class="key key-slim">キーを保存</button>
+              <p class="field-note" id="api-key-note" role="status"></p>
+            </div>
+          </section>
         </aside>
 
-        <!-- RIGHT COLUMN: CRT Viewer & Results Grid -->
-        <section class="main-content">
-          <!-- CRT TV Container -->
-          <div class="crt-tv-container">
-            <div class="tv-bezel-inner">
-              <div class="crt-screen-wrapper">
-                <!-- Screen overlay effects -->
-                <div class="crt-scanlines"></div>
-                <div class="crt-glare"></div>
-                <div class="crt-flicker"></div>
-                <div class="crt-curve"></div>
-                
-                <!-- HUD text overlay (PLAY, PAUSE, STOP) -->
-                <div class="crt-hud" id="crt-hud-status">PLAY</div>
-                <div class="crt-hud-time" id="crt-hud-time-display">00:00</div>
+        <!-- 右：受像機とデッキ -->
+        <section class="stack">
+          <div class="set">
+            <div class="set-bezel">
+              <div class="screen-frame">
+                <div class="crt-scanlines" aria-hidden="true"></div>
+                <div class="crt-glare" aria-hidden="true"></div>
+                <div class="crt-flicker" aria-hidden="true"></div>
+                <div class="crt-vignette" aria-hidden="true"></div>
 
-                <!-- CRT Screen Body -->
-                <div class="crt-screen" id="crt-screen">
-                  <!-- The static noise overlay shown when no video is loaded -->
-                  <div class="screen-static" id="screen-static">
-                    <div class="static-text">NO SIGNAL</div>
-                    <div class="static-subtext">下の検索結果から動画を選択してください</div>
+                <div class="osd" id="crt-hud-status">PLAY</div>
+                <div class="osd osd-time" id="crt-hud-time-display">00:00</div>
+
+                <div class="screen" id="crt-screen">
+                  <div class="no-signal" id="screen-static">
+                    <p class="no-signal-main">NO SIGNAL</p>
+                    <p class="no-signal-sub">下の一覧からテープを選ぶと再生します</p>
                   </div>
-                  
-                  <!-- Youtube Player goes here -->
                   <div id="yt-player-container"></div>
                 </div>
               </div>
 
-              <!-- TV Bezel Hardware Controls (Brand, speaker, power led) -->
-              <div class="tv-hardware-row">
-                <div class="tv-brand">RetroTube 2000</div>
-                <div class="speaker-grille"></div>
-                <div class="tv-hardware-controls">
-                  <div class="power-indicator">
-                    <span class="power-label">POWER</span>
-                    <div class="power-led" id="tv-power-led"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- VCR Deck Casing -->
-            <div class="vcr-deck">
-              <div class="vcr-row">
-                <!-- VCR Slot -->
-                <div class="vcr-slot-container">
-                  <div class="vcr-slot" id="vcr-slot">
-                    <div class="vcr-slot-door">▲ EJECT TAPE FIRST</div>
-                  </div>
-                </div>
-
-                <!-- VCR LED Clock -->
-                <div class="vcr-clock">
-                  <div class="vcr-clock-time" id="vcr-clock-display">--:--:--</div>
-                </div>
-              </div>
-
-              <div class="vcr-row" style="margin-top: 5px;">
-                <!-- VCR Physical Buttons -->
-                <div class="vcr-controls">
-                  <button class="vcr-btn btn-play" id="vcr-play" data-label="PLAY" disabled>▶</button>
-                  <button class="vcr-btn" id="vcr-pause" data-label="PAUSE" disabled>⏸</button>
-                  <button class="vcr-btn btn-stop" id="vcr-stop" data-label="STOP" disabled>■</button>
-                  <button class="vcr-btn" id="vcr-eject" data-label="EJECT" disabled>⏏</button>
-                </div>
-
-                <!-- VCR Audio Fader -->
-                <div class="vcr-fader-container">
-                  <span class="vcr-fader-label">AUDIO LEVEL</span>
-                  <div class="vcr-fader-track">
-                    <input 
-                      type="range" 
-                      id="vcr-volume" 
-                      class="vcr-fader-input" 
-                      min="0" 
-                      max="100" 
-                      value="75" 
-                      disabled
-                    />
-                  </div>
-                </div>
+              <div class="set-front">
+                <span class="set-brand">RetroTube</span>
+                <span class="grille" aria-hidden="true"></span>
+                <span class="pilot">
+                  <span class="pilot-label">POWER</span>
+                  <span class="lamp lamp-power" id="tv-power-led"></span>
+                </span>
               </div>
             </div>
           </div>
 
-          <!-- Video Listings Header -->
-          <div class="results-header-row">
-            <div class="results-title">
-              <span>📼 検索結果ビデオテープ</span>
+          <!-- デッキ -->
+          <div class="deck">
+            <div class="deck-row">
+              <div class="slot" id="vcr-slot">
+                <span class="slot-door">PUSH EJECT</span>
+              </div>
+              <div class="counter">
+                <span class="counter-ghost" aria-hidden="true">88:88:88</span>
+                <span class="counter-value" id="vcr-clock-display">--:--:--</span>
+              </div>
             </div>
-            <div class="results-count" id="results-count">表示件数: 0本</div>
+
+            <div class="deck-row deck-row-lower">
+              <div class="transport">
+                <button class="tkey" id="vcr-play" data-label="PLAY" aria-label="再生" disabled>▶</button>
+                <button class="tkey" id="vcr-pause" data-label="PAUSE" aria-label="一時停止" disabled>❙❙</button>
+                <button class="tkey" id="vcr-stop" data-label="STOP" aria-label="停止" disabled>■</button>
+                <button class="tkey" id="vcr-eject" data-label="EJECT" aria-label="取り出し" disabled>▲</button>
+              </div>
+
+              <div class="fader">
+                <label class="fader-label" for="vcr-volume">VOLUME</label>
+                <input
+                  type="range"
+                  id="vcr-volume"
+                  class="fader-input"
+                  min="0"
+                  max="100"
+                  value="75"
+                  disabled
+                />
+              </div>
+            </div>
           </div>
 
-          <!-- Results Scrollable Grid -->
-          <div class="results-grid" id="results-grid">
-            <div class="no-results">
-              <div class="no-results-icon">📼</div>
-              <div class="no-results-text">タイムトラベル検索を実行してください</div>
-              <div style="font-size: 0.8rem; color: var(--text-muted);">
-                ※APIキーを設定しない場合は、タイムカプセル内蔵のレトロ動画を検索します。
+          <!-- 検索結果 -->
+          <div class="results">
+            <div class="results-head">
+              <h2>検索結果</h2>
+              <span class="results-count" id="results-count" aria-live="polite">0本</span>
+            </div>
+
+            <div class="results-grid" id="results-grid">
+              <div class="notice">
+                <p class="notice-main">読み込み中</p>
               </div>
             </div>
           </div>
         </section>
       </main>
 
-      <footer>
-        <div>RetroTube &copy; 2026 - Back to the Retro Era</div>
-        <div>Designed with CRT &amp; VCR aesthetics</div>
+      <footer class="plate">
+        <span>RETROTUBE RT-2000</span>
+        <span>MADE IN 2026</span>
+        <span>映像は YouTube より取得</span>
       </footer>
     </div>
 
-    <!-- YouTube Player API script -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <script type="module" src="/src/main.js"></script>
   </body>

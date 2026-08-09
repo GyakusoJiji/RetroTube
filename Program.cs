@@ -207,13 +207,23 @@ namespace RetroTubeServer
 
             // Set up Default Files (e.g. index.html) and Static Files serving (from wwwroot)
             webApp.UseDefaultFiles();
-            webApp.UseStaticFiles();
+
+            // Always revalidate: WebView2 otherwise serves a heuristically-cached
+            // copy of the UI and keeps showing an old build after an edit
+            webApp.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    ctx.Context.Response.Headers.CacheControl = "no-cache";
+                }
+            });
 
             // 1. Search API endpoint: proxy to Google YouTube API or search Mock local database
             webApp.MapGet("/api/search", async (HttpContext context) =>
             {
                 var query = context.Request.Query["q"].ToString() ?? "";
                 var before = context.Request.Query["before"].ToString();
+                var after = context.Request.Query["after"].ToString();
                 var order = context.Request.Query["order"].ToString() ?? "relevance";
 
                 // Read API key from the request header sent by the client
@@ -223,7 +233,7 @@ namespace RetroTubeServer
                 if (string.IsNullOrEmpty(apiKey))
                 {
                     // Fallback to C# Local Mock Search
-                    var results = SearchMockVideos(query, before);
+                    var results = SearchMockVideos(query, before, after);
                     return Results.Ok(results);
                 }
                 else
@@ -231,7 +241,7 @@ namespace RetroTubeServer
                     // Query live YouTube API
                     try
                     {
-                        var results = await SearchYouTubeAPI(apiKey, query, before, order);
+                        var results = await SearchYouTubeAPI(apiKey, query, before, after, order);
                         return Results.Ok(results);
                     }
                     catch (Exception ex)
@@ -270,25 +280,38 @@ namespace RetroTubeServer
             webApp.StopAsync().GetAwaiter().GetResult();
         }
 
-        // C# Local Mock Database search with date cutoff filters
-        private static List<VideoItem> SearchMockVideos(string query, string? publishedBefore)
+        // C# Local Mock Database search with date range filters
+        private static List<VideoItem> SearchMockVideos(string query, string? publishedBefore, string? publishedAfter)
         {
             var q = query.Trim().ToLowerInvariant();
-            
+
             DateTime? cutoffDate = null;
             if (!string.IsNullOrEmpty(publishedBefore) && DateTime.TryParse(publishedBefore, out var dt))
             {
                 cutoffDate = dt.ToUniversalTime();
             }
 
+            DateTime? fromDate = null;
+            if (!string.IsNullOrEmpty(publishedAfter) && DateTime.TryParse(publishedAfter, out var fromDt))
+            {
+                fromDate = fromDt.ToUniversalTime();
+            }
+
             return MockVideos.Where(video =>
             {
-                // 1. Date Filter: Video published date must be strictly BEFORE the cutoff date
-                if (cutoffDate.HasValue)
+                // 1. Date Filter: published date must fall inside the requested span
+                if (cutoffDate.HasValue || fromDate.HasValue)
                 {
                     if (DateTime.TryParse(video.PublishedAt, out var pubDate))
                     {
-                        if (pubDate.ToUniversalTime() >= cutoffDate.Value)
+                        var pubUtc = pubDate.ToUniversalTime();
+
+                        if (cutoffDate.HasValue && pubUtc >= cutoffDate.Value)
+                        {
+                            return false;
+                        }
+
+                        if (fromDate.HasValue && pubUtc < fromDate.Value)
                         {
                             return false;
                         }
@@ -309,15 +332,21 @@ namespace RetroTubeServer
         }
 
         // Live YouTube API Query using HttpClient
-        private static async Task<List<VideoItem>> SearchYouTubeAPI(string apiKey, string query, string? before, string order)
+        private static async Task<List<VideoItem>> SearchYouTubeAPI(string apiKey, string query, string? before, string? after, string order)
         {
             var url = $"https://www.googleapis.com/youtube/v3/search?key={Uri.EscapeDataString(apiKey)}&part=snippet&type=video&maxResults=25&q={Uri.EscapeDataString(query)}&order={Uri.EscapeDataString(order)}";
             
-            // Format cutoff datetime to RFC 3339 UTC format
+            // Format the span boundaries to RFC 3339 UTC format
             if (!string.IsNullOrWhiteSpace(before) && DateTime.TryParse(before, out var dt))
             {
                 var rfc3339 = dt.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");
                 url += $"&publishedBefore={Uri.EscapeDataString(rfc3339)}";
+            }
+
+            if (!string.IsNullOrWhiteSpace(after) && DateTime.TryParse(after, out var afterDt))
+            {
+                var rfc3339 = afterDt.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");
+                url += $"&publishedAfter={Uri.EscapeDataString(rfc3339)}";
             }
 
             using var request = new HttpRequestMessage(HttpMethod.Get, url);

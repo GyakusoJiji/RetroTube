@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
-        Title="RetroTube - 過去のYouTube動画検索 &amp; CRTビュワー" 
-        Height="920" 
+        Title="RetroTube RT-2000 ビデオ検索・再生装置"
+        Height="920"
         Width="1320"
         WindowStartupLocation="CenterScreen"
-        Background="#0c0817">
+        Background="#3a3833">
     <Grid>
         <!-- WebView2 element that loads our RetroTube web application UI -->
         <wv2:WebView2 Name="webView" />
